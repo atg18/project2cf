@@ -1,0 +1,120 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  username  String   @unique
+  password  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  lastLogin DateTime?
+
+  // Relations
+  ownedDocuments Document[]
+  documentAccess DocumentAccess[]
+  grantedAccess  DocumentAccess[] @relation("GrantedBy")
+  comments       Comment[]
+  versions       DocumentVersion[]
+
+  @@map("users")
+}
+
+model Document {
+  id            String   @id @default(uuid())
+  title         String   @db.VarChar(500)
+  ownerId       String
+  contentBlobUrl String?
+  contentPreview String?
+  
+  // Metadata
+  contentSize   Int      @default(0)
+  wordCount     Int      @default(0)
+  versionCount  Int      @default(1)
+  
+  // Timestamps
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  lastAccessed  DateTime @default(now())
+
+  // Relations
+  owner      User             @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  accesses   DocumentAccess[]
+  versions   DocumentVersion[]
+  comments   Comment[]
+
+  @@index([ownerId, updatedAt])
+  @@index([updatedAt])
+  @@map("documents")
+}
+
+model DocumentAccess {
+  id              String         @id @default(uuid())
+  documentId      String
+  userId          String
+  permissionLevel PermissionLevel
+  grantedAt       DateTime       @default(now())
+  grantedById     String
+
+  // Relations
+  document   Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  grantedBy  User     @relation("GrantedBy", fields: [grantedById], references: [id])
+
+  @@unique([documentId, userId])
+  @@index([userId, permissionLevel])
+  @@map("document_access")
+}
+
+model DocumentVersion {
+  id              String   @id @default(uuid())
+  documentId      String
+  versionNumber   Int
+  contentBlobUrl  String
+  contentPreview  String?
+  createdAt       DateTime @default(now())
+  createdById     String
+  changeSummary   String?  @db.VarChar(200)
+
+  // Relations
+  document  Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  createdBy User     @relation(fields: [createdById], references: [id])
+
+  @@unique([documentId, versionNumber])
+  @@index([documentId, createdAt])
+  @@map("document_versions")
+}
+
+model Comment {
+  id           String   @id @default(uuid())
+  documentId   String
+  userId       String
+  content      String
+  positionStart Int?
+  positionEnd  Int?
+  createdAt    DateTime @default(now())
+  resolved     Boolean  @default(false)
+  resolvedById String?
+  resolvedAt   DateTime?
+
+  // Relations
+  document   Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userId], references: [id])
+  resolvedBy User?    @relation("ResolvedComments", fields: [resolvedById], references: [id])
+
+  @@index([documentId, resolved])
+  @@map("comments")
+}
+
+enum PermissionLevel {
+  READ
+  COMMENT
+  EDIT
+  OWNER
+}
