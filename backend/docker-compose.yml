@@ -1,0 +1,67 @@
+version: '3.8'
+
+services:
+  backend:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgresql://user:password@db:5432/collab_text_editor
+      - JWT_SECRET=your_jwt_secret_here_change_in_production
+      - AZURE_STORAGE_CONNECTION_STRING=DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://azure-storage:10000/devstoreaccount1;
+      - AZURE_CONTAINER_NAME=documents
+      - REDIS_URL=redis://redis:6379
+    volumes:
+      - ./src:/app/src
+      - /app/node_modules
+    depends_on:
+      - db
+      - redis
+      - azure-storage
+    command: npm run dev
+
+  db:
+    image: postgres:13-alpine
+    environment:
+      - POSTGRES_DB=collab_text_editor
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./prisma/migrations:/docker-entrypoint-initdb.d
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+  azure-storage:
+    image: mcr.microsoft.com/azure-storage/azurite
+    ports:
+      - "10000:10000"
+    volumes:
+      - azurite_data:/data
+
+  # Optional: Adminer for database management
+  adminer:
+    image: adminer
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+
+volumes:
+  postgres_data:
+  redis_data:
+  azurite_data:
+            port: 3000
+            initialDelaySeconds: 15
+            periodSeconds: 5
