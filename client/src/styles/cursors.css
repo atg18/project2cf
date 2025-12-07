@@ -1,0 +1,165 @@
+/**
+ * Cursor Tracking Styles
+ * 
+ * Ensures that remote user cursors display correctly with:
+ * - Horizontal username labels (never vertical)
+ * - Distinct colors
+ * - Proper positioning and sizing
+ * - Selection range highlights
+ */
+
+/* Quill Cursors Module Styling */
+
+/* Container for remote cursor */
+.ql-cursor {
+  position: absolute;
+  height: 20px;
+  width: 2px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  z-index: 10;
+  transition: top 0.05s ease-out, left 0.05s ease-out;
+}
+
+/* Cursor line (the vertical indicator) */
+.ql-cursor.ql-blinking::before {
+  content: '';
+  display: block;
+  width: 2px;
+  height: 100%;
+  background-color: currentColor;
+  animation: blink 0.8s infinite;
+}
+
+/* Username label styling - CRITICAL: white-space and writing-mode prevent vertical text */
+.ql-cursor-name {
+  position: absolute;
+  top: -20px;
+  left: 0;
+  padding: 3px 6px;
+  background-color: currentColor;
+  color: white;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 3px;
+  white-space: nowrap;
+  writing-mode: horizontal-tb; /* Force horizontal text direction */
+  text-orientation: mixed; /* Standard text orientation */
+  transform: translateZ(0);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
+  pointer-events: none;
+  user-select: none;
+  z-index: 11;
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.2;
+}
+
+/* Ensure label text never rotates */
+.ql-cursor-name::before,
+.ql-cursor-name::after {
+  writing-mode: horizontal-tb !important;
+  text-orientation: mixed !important;
+}
+
+/* Selection range styling for remote users */
+.ql-cursor-selection {
+  position: absolute;
+  opacity: 0.25;
+  pointer-events: none;
+  border-radius: 2px;
+}
+
+/* Blink animation for active cursors */
+@keyframes blink {
+  0%, 50% {
+    opacity: 1;
+  }
+  51%, 100% {
+    opacity: 0;
+  }
+}
+
+/* Inactive cursor styling (dimmed appearance) */
+.ql-cursor.inactive {
+  opacity: 0.4;
+}
+
+.ql-cursor.inactive .ql-cursor-name {
+  opacity: 0.6;
+  font-weight: 500;
+}
+
+.ql-cursor.inactive::before {
+  animation: none;
+  opacity: 0.4;
+}
+
+/* Active cursor styling */
+.ql-cursor.active {
+  opacity: 1;
+}
+
+.ql-cursor.active .ql-cursor-name {
+  opacity: 1;
+  animation: labelFade 0.3s ease-out;
+}
+
+/* Cursor appearance variants */
+.ql-cursor::before {
+  box-shadow: 0 0 2px rgba(0, 0, 0, 0.3);
+}
+
+/* Selection highlight with better visibility */
+.ql-cursor-selection {
+  mix-blend-mode: multiply;
+}
+
+/* Accessibility: ensure cursors are visible for high contrast mode */
+@media (prefers-contrast: more) {
+  .ql-cursor-name {
+    border: 2px solid currentColor;
+    font-weight: 700;
+  }
+  
+  .ql-cursor::before {
+    width: 3px;
+    box-shadow: 0 0 4px rgba(0, 0, 0, 0.5);
+  }
+}
+
+/* Ensure cursor visibility on dark editors */
+@media (prefers-color-scheme: dark) {
+  .ql-cursor-name {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+    background-color: currentColor;
+  }
+  
+  .ql-cursor-selection {
+    opacity: 0.3;
+  }
+}
+
+/* Fade in animation for labels */
+@keyframes labelFade {
+  from {
+    opacity: 0;
+    transform: translateY(-2px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Ensure editor container allows cursor positioning */
+.ql-editor {
+  position: relative;
+}
+
+/* Prevent layout shift when cursors appear */
+.ql-container {
+  position: relative;
+}
