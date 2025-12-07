@@ -1,0 +1,31 @@
+{
+  "dependencies": {
+    "axios": "^1.13.2",
+    "react-router-dom": "^7.10.1"
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.4.22",
+    "concurrently": "^9.2.1",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^4.1.17"
+  },
+  "name": "project2cf",
+  "version": "1.0.0",
+  "description": "",
+  "main": "CURSOR_DEBUG_CONSOLE_SCRIPT.js",
+  "scripts": {
+    "dev": "concurrently \"npm --prefix project-2-codefather-main/backend run dev\" \"npm --prefix client run dev\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/atg18/project2cf.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/atg18/project2cf/issues"
+  },
+  "homepage": "https://github.com/atg18/project2cf#readme"
+}
